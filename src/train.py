@@ -19,35 +19,35 @@ if __name__ == "__main__":
 
     # Load data
     data = np.loadtxt(args.data_path, delimiter=",", skiprows=1)
-    X = data[:, :-1]
-    Y = data[:, -1].reshape(-1, 1)
+    X = data[:, :-1].T
+    y = data[:, -1].reshape(1, -1)
 
     # Train/test split
     rng = np.random.default_rng(args.seed)
-    indices = rng.permutation(X.shape[0])
-    test_count = max(1, int(X.shape[0] * args.test_size))
+    indices = rng.permutation(X.shape[1])
+    test_count = max(1, int(X.shape[1] * args.test_size))
     test_idx = indices[:test_count]
     train_idx = indices[test_count:]
-    X_train, Y_train = X[train_idx], Y[train_idx]
-    X_test, Y_test = X[test_idx], Y[test_idx]
+    X_train, y_train = X[:, train_idx], y[:, train_idx]
+    X_test, y_test = X[:, test_idx], y[:, test_idx]
 
     # Hyperparameters
-    input_size = X_train.shape[1]
+    input_size = X_train.shape[0]
     hidden_size = args.hidden_size
-    output_size = Y_train.shape[1]
+    output_size = y_train.shape[0]
     learning_rate = args.learning_rate
     epochs = args.epochs
 
     # Initialize neural network
     nn = NeuralNetwork(input_size, hidden_size, output_size)
-    nn.train(learning_rate, X_train, Y_train, epochs)
+    nn.train(learning_rate, X_train, y_train, epochs)
 
     # Evaluate on train
     train_predictions = nn.predict(X_train)
-    train_accuracy = np.mean(train_predictions == Y_train)
+    train_accuracy = np.mean(train_predictions == y_train)
     print(f"Train Accuracy: {train_accuracy:.4f}")
     
     # Evaluate on test
     predictions = nn.predict(X_test)
-    test_accuracy = np.mean(predictions == Y_test)
+    test_accuracy = np.mean(predictions == y_test)
     print(f"Test Accuracy: {test_accuracy:.4f}")
